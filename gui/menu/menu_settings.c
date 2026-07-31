@@ -14,6 +14,10 @@
 #include "pipe/def.h"
 #include "ui/ui_anim.h"
 
+#if defined(VANILLA_CUDA_AVAILABLE) || defined(VANILLA_DRM_AVAILABLE) || defined(VANILLA_VAAPI_AVAILABLE)
+#define VANILLA_HAS_HWDEC
+#endif
+
 static void return_to_main(vui_context_t *vui, int btn, void *v)
 {
     int layer = (intptr_t) v;
@@ -37,6 +41,13 @@ static void transition_to_region(vui_context_t *vui, int button, void *v)
     int layer = (intptr_t) v;
     vui_transition_fade_layer_out(vui, layer, vpi_menu_region, 0);
 }
+
+#ifndef VANILLA_GUI_ENABLE_WINDOWED
+static void thunk_to_quit(vui_context_t *vui, int button, void *v)
+{
+    vpi_menu_quit_vanilla(vui);
+}
+#endif
 
 #ifdef VANILLA_POLKIT_AVAILABLE
 static void do_polkit_install(vui_context_t *vui, void *v)
@@ -106,12 +117,14 @@ static void toggle_cursor_in_fullscreen(vui_context_t *vui, int button, void *v)
     vui_button_update_checked(vui, button, vpi_config.cursor_in_fullscreen);
 }
 
+#ifdef VANILLA_HAS_HWDEC
 static void toggle_hwdec(vui_context_t *vui, int button, void *v)
 {
     vpi_config.force_software_decode = !vpi_config.force_software_decode;
     vpi_config_save();
     vui_button_update_checked(vui, button, !vpi_config.force_software_decode);
 }
+#endif
 
 void vpi_menu_settings(vui_context_t *vui, void *v)
 {
@@ -175,10 +188,6 @@ void vpi_menu_settings(vui_context_t *vui, void *v)
 		SETTINGS_ACTION[sc] = transition_to_install_polkit_rule;
 	}
     sc++;
-#endif
-
-#if defined(VANILLA_CUDA_AVAILABLE) || defined(VANILLA_DRM_AVAILABLE) || defined(VANILLA_VAAPI_AVAILABLE)
-#define VANILLA_HAS_HWDEC
 #endif
 
 #ifdef VANILLA_HAS_HWDEC

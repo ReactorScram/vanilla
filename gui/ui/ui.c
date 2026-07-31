@@ -240,7 +240,8 @@ void vui_button_update_style(vui_context_t *ctx, int index, vui_button_style_t s
 
 void vui_select_direction(vui_context_t *ctx, vui_direction_t dir)
 {
-    int cx, cy;
+    int cx = 0;
+    int cy = 0;
     if (ctx->selected_button == -1) {
         int sw, sh;
         vui_get_screen_size(ctx, &sw, &sh);

@@ -1864,7 +1864,7 @@ int vui_update_sdl(vui_context_t *vui)
 
     vui_update(vui);
 
-    SDL_Texture *main_tex;
+    SDL_Texture *main_tex = NULL;
 
 #ifdef VANILLA_DRM_AVAILABLE
     static vanilla_drm_ctx_t *drm_ctx = NULL;
