@@ -240,7 +240,8 @@ void vui_button_update_style(vui_context_t *ctx, int index, vui_button_style_t s
 
 void vui_select_direction(vui_context_t *ctx, vui_direction_t dir)
 {
-    int cx, cy;
+    int cx = 0;
+    int cy = 0;
     if (ctx->selected_button == -1) {
         int sw, sh;
         vui_get_screen_size(ctx, &sw, &sh);
@@ -274,8 +275,6 @@ void vui_select_direction(vui_context_t *ctx, vui_direction_t dir)
     for (int i = 0; i < ctx->button_count; i++) {
         vui_button_t *b = &ctx->buttons[i];
         if (b->visible && b->enabled) {
-            int valid = 0;
-
             // Determine what "direction" this button is in
             int ccx = b->x + b->w / 2;
             int ccy = b->y + b->h / 2;
@@ -363,8 +362,6 @@ void release_button(vui_context_t *ctx, int and_click)
         // No button was mousedown'd, do nothing here
         return;
     }
-
-    vui_button_t *btn = &ctx->buttons[ctx->button_active];
 
     // Only do action if mouse is still inside button's rect
     vui_callback_t callback = 0;

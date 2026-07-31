@@ -27,8 +27,6 @@ static int main_menu_no_console_lbl;
 static int main_menu_connect_btn;
 static int main_menu_edit_btn;
 
-static const char *checkmark = "checkmark.svg";
-
 void vpi_menu_main_sync_action(vui_context_t *vui, int btn, void *v)
 {
     vui_transition_fade_layer_out(vui, (int) (intptr_t) v, vpi_menu_sync, 0);

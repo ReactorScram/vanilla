@@ -86,43 +86,48 @@ void cancel_connect(vui_context_t *vui, int button, void *v)
     vui_transition_fade_layer_out(vui, layer, vpi_menu_main, 0);
 }
 
-static void update_battery_information(vui_context_t *vui, int64_t time)
+enum VanillaBatteryStatus compute_battery_status(vui_power_state_t power_state, int percent)
 {
-    // Get power information
-    int64_t current_minute = time / (2 * 1000000); // Update every 2 seconds
-    if (menu_game_ctx.last_power_time != current_minute) {
-        int percent;
-        vui_power_state_t power_state = vui_power_state_get(vui, &percent);
-
-        enum VanillaBatteryStatus status = VANILLA_BATTERY_STATUS_UNKNOWN;
-
-        switch (power_state) {
+    switch (power_state) {
         case VUI_POWERSTATE_ERROR:
         case VUI_POWERSTATE_UNKNOWN:
             // Sending an unknown/error state to the Wii U can cause undesirable
             // side effects (e.g. it will be unable to "update" the gamepad and
             // will nag the user every boot about it), so instead we just send
             // it an innocuous "charging" state.
+
+            // This intentionally falls through
         case VUI_POWERSTATE_NO_BATTERY:
         case VUI_POWERSTATE_CHARGING:
         case VUI_POWERSTATE_CHARGED:
             // Plugged in
-            status = VANILLA_BATTERY_STATUS_CHARGING;
-            break;
+            return VANILLA_BATTERY_STATUS_CHARGING;
         case VUI_POWERSTATE_ON_BATTERY:
             // On battery
-            status = (percent < 10) ? VANILLA_BATTERY_STATUS_VERY_LOW :
-                        (percent < 25) ? VANILLA_BATTERY_STATUS_LOW :
-                        (percent < 75) ? VANILLA_BATTERY_STATUS_MEDIUM :
-                        (percent < 95) ? VANILLA_BATTERY_STATUS_HIGH :
-                        VANILLA_BATTERY_STATUS_FULL;
-            break;
-        }
-
-        vanilla_set_battery_status(status);
-
-        menu_game_ctx.last_power_time = current_minute;
+            return (percent < 10) ? VANILLA_BATTERY_STATUS_VERY_LOW :
+                (percent < 25) ? VANILLA_BATTERY_STATUS_LOW :
+                (percent < 75) ? VANILLA_BATTERY_STATUS_MEDIUM :
+                (percent < 95) ? VANILLA_BATTERY_STATUS_HIGH :
+                VANILLA_BATTERY_STATUS_FULL;
     }
+    return VANILLA_BATTERY_STATUS_CHARGING;
+}
+
+static void update_battery_information(vui_context_t *vui, int64_t time_micros)
+{
+    // Get power information
+    const int64_t current_tick = time_micros / (2 * 1000000); // Update every 2 seconds
+    if (menu_game_ctx.last_power_time == current_tick) {
+        return;
+    }
+    int percent = 0;
+    const vui_power_state_t power_state = vui_power_state_get(vui, &percent);
+
+    const enum VanillaBatteryStatus status = compute_battery_status(power_state, percent);
+
+    vanilla_set_battery_status(status);
+
+    menu_game_ctx.last_power_time = current_tick;
 }
 
 static inline void be16(uint8_t *p, uint16_t v) { p[0] = (uint8_t)(v >> 8); p[1] = (uint8_t)v; }
@@ -146,7 +151,8 @@ size_t build_avcc(uint8_t *dst, size_t cap,
     uint8_t *e = dst + cap;
 
     // configurationVersion
-    if (p+1 > e) return 0; *p++ = 1;
+    if (p+1 > e) { return 0; }
+    *p++ = 1;
     // profile/compat/level
     if (p+3 > e) return 0;
     *p++ = AVCProfileIndication;
@@ -276,20 +282,25 @@ static int is_v4l2request_available(void)
 
 void vpi_decode_exit(vpi_decode_state_t *s)
 {
-    if (s->frame)
+    if (s->frame) {
         av_frame_free(&s->frame);
+    }
 
-    if (s->pkt)
-	    av_packet_free(&s->pkt);
+    if (s->pkt) {
+        av_packet_free(&s->pkt);
+    }
 
-    if (vpi_present_frame)
-	    av_frame_free(&vpi_present_frame);
+    if (vpi_present_frame) {
+        av_frame_free(&vpi_present_frame);
+    }
 
-    if (s->codec_ctx)
+    if (s->codec_ctx) {
         avcodec_free_context(&s->codec_ctx);
+    }
 
-	if (s->hw_device_ctx)
-		av_buffer_unref(&s->hw_device_ctx);
+    if (s->hw_device_ctx) {
+        av_buffer_unref(&s->hw_device_ctx);
+    }
 }
 
 int open_decoder(vpi_decode_state_t *s, hwdec_t *dec)
@@ -664,8 +675,6 @@ void *vpi_event_loop(void *arg)
     static vpi_decode_state_t s;
     vanilla_event_t event;
     while (vpi_game_queued_error != VANILLA_ERR_SHUTDOWN && vanilla_wait_event(&event)) {
-        int stop = 0;
-
         switch (event.type) {
         case VANILLA_EVENT_VIDEO:
             if (!vpi_decode_alloc) {
@@ -708,8 +717,6 @@ void *vpi_event_loop(void *arg)
                 } else {
                     int err;
 
-                    int ret = 1;
-
                     // Retrieve frame from decoder
                     while (1) {
                         err = avcodec_receive_frame(s.codec_ctx, s.frame);
@@ -718,7 +725,6 @@ void *vpi_event_loop(void *arg)
                             break;
                         } else if (err < 0) {
                             vpilog("Failed to receive frame from decoder: %i\n", err);
-                            ret = 0;
                             break;
                         } else {
                             pthread_mutex_lock(&vpi_present_frame_mutex);
@@ -743,8 +749,6 @@ void *vpi_event_loop(void *arg)
                             }
                         }
                     }
-
-                    // return ret;
                 }
             }
             break;
@@ -845,7 +849,7 @@ void vpi_menu_game_start(vui_context_t *vui, void *v)
 
         // TODO: `state` does not get freed if
         const int cancel_btn_w = BTN_SZ*3;
-        int cancel_btn = vui_button_create(vui, scrw/2 - cancel_btn_w/2, scrh * 3 / 5, cancel_btn_w, BTN_SZ, lang(VPI_LANG_CANCEL_BTN), 0, VUI_BUTTON_STYLE_BUTTON, fglayer, cancel_connect, (void *) (intptr_t) fglayer);
+        /* int cancel_btn = */ vui_button_create(vui, scrw/2 - cancel_btn_w/2, scrh * 3 / 5, cancel_btn_w, BTN_SZ, lang(VPI_LANG_CANCEL_BTN), 0, VUI_BUTTON_STYLE_BUTTON, fglayer, cancel_connect, (void *) (intptr_t) fglayer);
 
         vui_transition_fade_layer_in(vui, fglayer, 0, 0);
 
@@ -890,8 +894,6 @@ void vpi_get_toast(int *number, char *output, size_t output_size, struct timeval
 void vpi_decode_send_audio(const void *data, size_t size)
 {
 	if (recording_fmt_ctx) {
-        int ret;
-
 		AVPacket *pkt = av_packet_alloc();
 
 		pkt->data = (uint8_t *) data;

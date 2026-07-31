@@ -92,6 +92,7 @@ static void animate_button(vui_context_t *ctx, int64_t time, void *userdata)
 static int set_default_button_icon_mod(vui_context_t *vui, int button)
 {
     vui_button_update_icon_mod(vui, button, gICON_COLOUR);
+    return 0;
 }
 
 static void cancel_key_listen(vui_context_t *ctx, void *userdata)
@@ -278,7 +279,7 @@ void vpi_menu_gamepad(vui_context_t *vui, void *v)
     vui_button_update_checkable(vui, swap_abxy_button, 1);
     vui_button_update_checked(vui, swap_abxy_button, vpi_config.swap_abxy);
 
-    int keyboard_bind_button = vui_button_create(vui, BTN_SZ, BTN_SZ + list_item_height * 1, list_item_width, list_item_height, lang(VPI_LANG_KEYBOARD_CONTROLS), NULL, VUI_BUTTON_STYLE_LIST, layer, transition_to_keybinds, (void *)(intptr_t)layer);
+    /* int keyboard_bind_button = */ vui_button_create(vui, BTN_SZ, BTN_SZ + list_item_height * 1, list_item_width, list_item_height, lang(VPI_LANG_KEYBOARD_CONTROLS), NULL, VUI_BUTTON_STYLE_LIST, layer, transition_to_keybinds, (void *)(intptr_t)layer);
 
     // Back button
     vpi_menu_create_back_button(vui, layer, return_to_settings, (void *) (intptr_t) layer);
