@@ -101,6 +101,7 @@ static void transition_to_uninstall_polkit_rule(vui_context_t *vui, int button, 
 }
 #endif
 
+#ifdef VANILLA_GUI_ENABLE_WINDOWED
 static void toggle_fullscreen(vui_context_t *vui, int button, void *v)
 {
     vpi_config.fullscreen = !vpi_config.fullscreen;
@@ -116,6 +117,7 @@ static void toggle_cursor_in_fullscreen(vui_context_t *vui, int button, void *v)
     vui_set_fullscreen(vui, vpi_config.fullscreen);
     vui_button_update_checked(vui, button, vpi_config.cursor_in_fullscreen);
 }
+#endif
 
 #ifdef VANILLA_HAS_HWDEC
 static void toggle_hwdec(vui_context_t *vui, int button, void *v)
