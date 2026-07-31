@@ -48,6 +48,8 @@ void vpi_menu_action(vui_context_t *vui, vpi_extra_action_t action)
         vpi_decode_screenshot(ss_fn);
         break;
     }
+    case VPI_ACTION_START_INDEX:
+        break;
     case VPI_ACTION_TOGGLE_RECORDING:
     {
         int recording = vpi_decode_is_recording();

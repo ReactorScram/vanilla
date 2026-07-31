@@ -462,7 +462,6 @@ int vui_sdl_event_thread(void *data)
                             char tmp[MAX_BUTTON_TEXT];
                             int new_cursor = 0;
                             int diff = rel_x;
-                            size_t len = 0;
                             char *src = edit->text;
                             while (*src != 0) {
                                 src = vui_utf8_advance(src);
@@ -647,6 +646,8 @@ int vui_sdl_event_thread(void *data)
                         break;
                     case SDL_SCANCODE_DELETE:
                         vui_textedit_del(vui, vui->active_textedit);
+                        break;
+                    default:
                         break;
                     }
                 }
@@ -1535,10 +1536,8 @@ void vui_draw_sdl(vui_context_t *ctx, SDL_Renderer *renderer)
             const int tlx = btn->sx;
             const int tly = btn->sy;
             const int trx = btn->sx + btn->sw;
-            const int try = tly;
             const int blx = tlx;
             const int bly = btn->sy + btn->sh;
-            const int brx = trx;
             const int bry = bly;
 
             SDL_SetRenderDrawColor(renderer, 0x17, 0xCB, 0xD1, 0xFF);

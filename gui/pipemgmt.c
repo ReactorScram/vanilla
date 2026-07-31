@@ -511,7 +511,7 @@ void vpi_stop_pipe()
     if (pipe_pid != -1) {
         // Signal to pipe to quit. We must send it through stdin because the pipe
         // runs under root, so we have no permission to send it SIGINT or SIGTERM.
-        ssize_t s = write(pipe_input, "QUIT\n", 5);
+        write(pipe_input, "QUIT\n", 5);
         close(pipe_input);
 
         // Wait for our log thread to quit

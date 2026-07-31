@@ -94,7 +94,7 @@ void vpi_config_save()
     xmlTextWriterWriteElement(writer, BAD_CAST "swdec", BAD_CAST buf);
 
     xmlTextWriterStartElement(writer, BAD_CAST "controls");
-    if (vpi_config.keymap) {
+    {
         xmlTextWriterStartElement(writer, BAD_CAST "keys");
 
         for (int i = 0; i < VPI_CONFIG_KEYMAP_SIZE; i++) {
@@ -115,7 +115,7 @@ void vpi_config_save()
         xmlTextWriterEndElement(writer); // keys
     }
 
-    if (vpi_config.buttonmap) {
+    {
         xmlTextWriterStartElement(writer, BAD_CAST "buttons");
 
         for (int i = 0; i < VPI_CONFIG_BUTTONMAP_SIZE; i++) {
@@ -136,7 +136,7 @@ void vpi_config_save()
         xmlTextWriterEndElement(writer); // buttons
     }
 
-    if (vpi_config.axismap) {
+    {
         xmlTextWriterStartElement(writer, BAD_CAST "axes");
 
         for (int i = 0; i < VPI_CONFIG_AXISMAP_SIZE; i++) {
@@ -253,14 +253,14 @@ void vpi_config_init()
                         xmlNodePtr section = child->children;
                         while(section){
                             if (section->type == XML_ELEMENT_NODE) {
-                                if (!strcmp(section->name, "keys")) {
+                                if (!strcmp((const char *)section->name, "keys")) {
                                     xmlNodePtr key = section->children;
                                     while (key) {
-                                        if (key->type == XML_ELEMENT_NODE && !strcmp(key->name, "key")) {
+                                        if (key->type == XML_ELEMENT_NODE && !strcmp((const char *)key->name, "key")) {
                                             int id = -1;
                                             xmlAttr *attribute = key->properties;
                                             while (attribute) {
-                                                if (!strcmp(attribute->name, "id")) {
+                                                if (!strcmp((const char *)attribute->name, "id")) {
                                                     id = atoi((const char *) attribute->children->content);
                                                 }
                                                 attribute = attribute->next;
@@ -275,14 +275,14 @@ void vpi_config_init()
                                         }
                                         key = key->next;
                                     }
-                                } else if (!strcmp(section->name, "buttons")) {
+                                } else if (!strcmp((const char *)section->name, "buttons")) {
                                     xmlNodePtr btn = section->children;
                                     while (btn) {
-                                        if (btn->type == XML_ELEMENT_NODE && !strcmp(btn->name, "button")) {
+                                        if (btn->type == XML_ELEMENT_NODE && !strcmp((const char *)btn->name, "button")) {
                                             int id = -1;
                                             xmlAttr *attribute = btn->properties;
                                             while (attribute) {
-                                                if (!strcmp(attribute->name, "id")) {
+                                                if (!strcmp((const char *)attribute->name, "id")) {
                                                     id = atoi((const char *) attribute->children->content);
                                                 }
                                                 attribute = attribute->next;
@@ -297,14 +297,14 @@ void vpi_config_init()
                                         }
                                         btn = btn->next;
                                     }
-                                } else if (!strcmp(section->name, "axes")) {
+                                } else if (!strcmp((const char *)section->name, "axes")) {
                                     xmlNodePtr axis = section->children;
                                     while (axis) {
-                                        if (axis->type == XML_ELEMENT_NODE && !strcmp(axis->name, "axis")) {
+                                        if (axis->type == XML_ELEMENT_NODE && !strcmp((const char *)axis->name, "axis")) {
                                             int id = -1;
                                             xmlAttr *attribute = axis->properties;
                                             while (attribute) {
-                                                if (!strcmp(attribute->name, "id")) {
+                                                if (!strcmp((const char *)attribute->name, "id")) {
                                                     id = atoi((const char *) attribute->children->content);
                                                 }
                                                 attribute = attribute->next;

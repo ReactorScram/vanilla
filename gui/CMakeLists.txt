@@ -345,6 +345,8 @@ endif()
 
 # Declare executable
 add_library(vanillagui STATIC ${VANILLA_GUI_SRC})
+target_compile_options(vanillagui PRIVATE -Wall -Werror)
+
 if (ANDROID)
     add_library(vanilla SHARED main.c)
 else()
